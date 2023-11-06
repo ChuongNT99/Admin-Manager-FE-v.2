@@ -1,17 +1,21 @@
-// import React from 'react';
 import './App.css';
-// import CreateRoom from './components/Rooms/CreateRoom';
-// import FormLogin  from './components/Form/Form';
-// import Home from './components/Rooms/Home';
+import React from 'react'
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import LayoutApp from './components/Layout/LayoutApp';
+import Home from './components/Rooms/Home';
+import EmployeesManager from './components/Employees/EmployeesManager';
 
-
-const App:React.FC = () => {
+function App() {
   return (
-    <>
-    {/* <FormLogin/> */}
-    {/* <Home/> */}
-    {/* <CreateRoom/> */}
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LayoutApp />}>
+          <Route index element={<Home />} />
+          <Route path='employeesmanager' element={<EmployeesManager />} />
+
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
 
