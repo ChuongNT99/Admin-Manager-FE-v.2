@@ -63,9 +63,9 @@ const LayoutApp = () => {
               label: "Booking Management"
             },
             {
-              key: "signout",
+              key: "logout",
               icon: <LogoutOutlined />,
-              label: "Signout"
+              label: "Logout"
             }
           ]}
         />
