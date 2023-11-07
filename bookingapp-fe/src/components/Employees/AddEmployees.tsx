@@ -1,53 +1,65 @@
-import React,{  useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import {  Form, Input, Button, Modal } from "antd";
+import { Form, Input, Button, Modal } from "antd";
 import { EmployeeType } from "./EmployeeType";
-const url = "https://a71f-210-245-110-144.ngrok-free.app/";
+const url = "https://a71f-210-245-110-144.ngrok-free.app";
 
 const AddEmployee = () => {
-  const [employees, setEmployees] = useState([] as EmployeeType []);
-  const [addname, setAddName] = useState("");
-  const [addemail, setAddEmail] = useState("");
-  const [addnumber, setAddNumber] = useState(" ");
- 
- 
+  const [employees, setEmployees] = useState([] as EmployeeType[]);
+  const [employee_name, setAddName] = useState("");
+  const [email, setAddEmail] = useState("");
+  const [phone_number, setAddNumber] = useState(" ");
+  const [password, setAddpass] = useState(" ");
+
+
+
   useEffect(() => {
     axios
       .get(url + "/employees", {
         withCredentials: true,
       })
       .then((res) => {
-        setEmployees(res.data.employee);
+        setEmployees(res.data.employees);
         console.log(employees)
       });
   }, []);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const handleSubmit = () => {
-    const newEmployee = {
-        employees_id : employees.length +1,
-        addname ,
-        addemail,
-        addnumber
-    };
+    // const newEmployee = {
+    //     employee_id : employees.length +1,
+    //     employee_name ,
+    //     email,
+    //     phone_number,
+    //     password
+    // };
     axios
       .post(url + "/employees", {
-        newEmployee
-      }) .then((res) => {
+        employee_id: employees.length + 1,
+        employee_name,
+        email,
+        phone_number,
+        password
+      }).then((res) => {
         setEmployees(res.data.employees);
-        console.log("add",employees)
+        console.log("add", employees)
+        alert('Successfully added new employees')
+        setIsModalOpen(false);
         window.location.reload()
       })
       .catch((err) => console.log(err));
   };
 
-  const onchangeName = (e: any) =>{
+  const onchangeName = (e: any) => {
     setAddName(e.target.value)
   }
-  const onchangeEmail = (e: any) =>{
+  const onchangeEmail = (e: any) => {
     setAddEmail(e.target.value)
   }
-  const onchangephone = (e: any) =>{
+  const onchangephone = (e: any) => {
     setAddNumber(e.target.value)
+  }
+  const onchangepass = (e: any) => {
+    setAddpass(e.target.value)
   }
 
   const showModal = () => {
@@ -63,8 +75,8 @@ const AddEmployee = () => {
     setIsModalOpen(false);
   };
   return (
-    <>    
-      <Button  style={{height: 100, }} onClick={showModal}>
+    <>
+      <Button onClick={showModal}>
         Add employee
       </Button>
       <Modal
@@ -85,23 +97,33 @@ const AddEmployee = () => {
             style={{ maxWidth: 600 }}
           >
             <Form.Item label="Name" name="name" rules={[{ required: true }]}>
-              <Input value={addname} onChange={onchangeName} required />
+              <Input value={employee_name} onChange={onchangeName} required />
             </Form.Item>
 
-            <Form.Item label="Email" name="email" rules={[{ required: true }]}>
-              <Input value={addemail} type="email" onChange={onchangeEmail} required />
+            <Form.Item label="Email" name="email" rules={[
+              { required: true, message: 'Please input your email!' },
+              { pattern: /^[\w-]+(\.[\w-]+)*@hotmail\.com$|^[\w-]+(\.[\w-]+)*@outlook\.com$|^[\w-]+(\.[\w-]+)*@gmail\.com$/, message: 'hãy nhập email có dang @gmail.com!' }
+            ]} >
+              <Input value={email} type="email" onChange={onchangeEmail} required />
             </Form.Item>
             <Form.Item
               label="Phone Number"
               name="number"
               rules={[{ required: true }]}
             >
-              <Input value={addnumber} pattern="[0-9]{1,10}" type="tel" maxLength={10} onChange={onchangephone} required />
+              <Input value={phone_number} pattern="[0-9]{1,10}" type="tel" maxLength={10} onChange={onchangephone} required />
+            </Form.Item>
+            <Form.Item
+              label="Password"
+              name="password"
+              rules={[{ required: true }]}
+            >
+              <Input value={password} type="password" onChange={onchangepass} required />
             </Form.Item>
           </Form>
         </div>
       </Modal>
-      
+
     </>
   );
 };
