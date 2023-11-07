@@ -132,7 +132,7 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      <Modal title="Edit Room" visible={showEditModal} onCancel={handleCloseEditModal} footer={null}>
+      <Modal title="Edit Room" open={showEditModal} onCancel={handleCloseEditModal} footer={null}>
         <Form>
           <Form.Item>
             <Input type="text" value={roomName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRoomName(e.target.value)} />

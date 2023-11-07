@@ -1,22 +1,29 @@
-import  React,{ useState } from 'react'
-import { useNavigate, Outlet } from 'react-router-dom'
+// Import các thư viện cần thiết
+import React, { useState } from 'react';
+import { useNavigate, Outlet } from 'react-router-dom';
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-  HomeOutlined, UserOutlined,SelectOutlined,
-  LogoutOutlined
+  HomeOutlined,
+  UserOutlined,
+  SelectOutlined,
+  LogoutOutlined,
 } from '@ant-design/icons';
 import { Layout, Menu, Button, theme } from 'antd';
 const { Header, Sider, Content } = Layout;
 
-
 const LayoutApp = () => {
-
   const [collapsed, setCollapsed] = useState(false);
   const {
     token: { colorBgContainer },
   } = theme.useToken();
-  const navigator = useNavigate ()
+  const navigator = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigator('/login');
+  };
+
   return (
     <Layout>
       <Sider trigger={null} collapsible collapsed={collapsed}>
@@ -26,47 +33,45 @@ const LayoutApp = () => {
           icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           onClick={() => setCollapsed(!collapsed)}
           style={{
-            fontSize: "16px",
+            fontSize: '16px',
             width: 64,
             height: 64,
-            color: "white",
-            marginLeft: 9
+            color: 'white',
+            marginLeft: 9,
           }}
         />
         <Menu
-        onClick={({key}) =>{
-          if (key === "signout"){
-            // sign out feature here
-          }else{
-            navigator(key);
-          }
-
-        }}
+          onClick={({ key }) => {
+            if (key === 'logout') {
+              handleLogout();
+            } else {
+              navigator(key);
+            }
+          }}
           theme="dark"
           mode="inline"
-          defaultSelectedKeys={["/"]}
+          defaultSelectedKeys={['/']}
           items={[
             {
-              key: "/",
+              key: '/',
               icon: <HomeOutlined />,
-              label: "Home"
-              
+              label: 'Home',
             },
             {
-              key: "/employeesmanager",
+              key: '/employeesmanager',
               icon: <UserOutlined />,
-              label: "Employees Manager"
+              label: 'Employees Manager',
             },
             {
-              key: "/bookingmanagement",
+              key: '/bookingmanagement',
               icon: <SelectOutlined />,
-              label: "Booking Management"
+              label: 'Booking Management',
             },
             {
-              key: "logout",
+              key: 'logout',
               icon: <LogoutOutlined />,
-              label: "Logout"
-            }
+              label: 'Logout',
+            },
           ]}
         />
       </Sider>
@@ -74,25 +79,26 @@ const LayoutApp = () => {
         <Header
           style={{
             padding: 0,
-            background: "dark"
+            background: 'dark',
           }}
         >
-          <p style={{ color: "white", fontSize: 20, marginLeft: 24, marginTop: 0}}><b>Website booking room meeting</b></p>
-
+          <p style={{ color: 'white', fontSize: 20, marginLeft: 24, marginTop: 0 }}>
+            <b>Website booking room meeting</b>
+          </p>
         </Header>
         <Content
           style={{
-            margin: "24px 16px",
+            margin: '24px 16px',
             padding: 24,
             minHeight: 600,
-            background: colorBgContainer
+            background: colorBgContainer,
           }}
         >
-          <Outlet/>
+          <Outlet />
         </Content>
       </Layout>
     </Layout>
-  )
-}
+  );
+};
 
-export default LayoutApp
+export default LayoutApp;
