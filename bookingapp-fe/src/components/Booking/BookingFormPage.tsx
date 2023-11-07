@@ -4,10 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { Select, Button, DatePicker, Form, Row, Col, Typography } from 'antd';
 import dayjs from 'dayjs';
 
+
 const { Option } = Select;
 const { Title } = Typography;
 
-const url = 'https://f255-210-245-110-144.ngrok-free.app';
+const url = 'https://a71f-210-245-110-144.ngrok-free.app';
 
 interface Employee {
   employees_id: number;
@@ -26,7 +27,7 @@ interface Room {
   room_name: string;
 }
 
-const BookingFormPage: React.FC<{ selectedRoom: Room }> = ({
+const BookingFormPage: React.FC<{ selectedRoom: Room | null}> = ({
   selectedRoom,
 }) => {
   const history = useNavigate();
@@ -38,13 +39,16 @@ const BookingFormPage: React.FC<{ selectedRoom: Room }> = ({
     employee_id: 0,
   });
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const token = localStorage.getItem('access_token');
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(url + '/employee', {
-        withCredentials: true,
+      const response = await axios.get(url + '/employees', {
+        withCredentials: true
       });
       setEmployees(response.data.employee);
+      console.log(employees);
+      
     } catch (error) {
       console.error('Error fetching employees:', error);
     }
@@ -86,6 +90,9 @@ const BookingFormPage: React.FC<{ selectedRoom: Room }> = ({
     try {
       await axios.post(url + '/bookings', bookingData, {
         withCredentials: true,
+        headers:{
+          Authorization: `Bearer ${token}`
+        }
       });
 
       alert('Booking success');

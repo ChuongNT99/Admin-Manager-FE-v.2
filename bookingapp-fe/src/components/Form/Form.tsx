@@ -1,10 +1,20 @@
 import { useState } from 'react';
 import { MailOutlined, LockOutlined } from '@ant-design/icons';
-import { Button, Form, Input, message } from 'antd';
+import { Button, Form, Input } from 'antd';
+import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
+import { useDispatch } from 'react-redux';
+import { setAuthData } from '../reducers/authSlice';
+import { useNavigate } from 'react-router-dom';
+interface User {
+  sub: number;
+  role: boolean;
+}
 
-const url: string = 'https://36c1-210-245-110-144.ngrok-free.app';
+const url: string = 'https://a71f-210-245-110-144.ngrok-free.app';
 const FormLogin: React.FC = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [form] = Form.useForm();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState<boolean>(false);
@@ -15,16 +25,17 @@ const FormLogin: React.FC = () => {
     await axios
       .post(url + '/login', values, {
         withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json',
-          Server: 'Werkzeug/3.0.0 Python/3.12.0',
-          'cache-control': 'no-cache,private',
-        },
       })
       .then(res => {
-        const token = res.data.token;
         alert('Đăng nhập thành công');
-        localStorage.setItem('token', token);
+        localStorage.setItem('access_token', res.data);
+        const token: string = res.data.access_token;
+        const decodedToken = jwtDecode(token) as User;
+        const role: boolean = decodedToken.role;
+        localStorage.setItem('access_token', token);
+        localStorage.setItem('role', String(role));
+        dispatch(setAuthData({ role, token }));
+        navigate('/');
       })
       .catch(message => {
         alert(message);
