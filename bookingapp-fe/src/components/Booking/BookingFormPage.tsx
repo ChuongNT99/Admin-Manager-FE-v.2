@@ -114,7 +114,7 @@ const BookingFormPage: React.FC<{ selectedRoom: Room | null }> = ({
       });
 
       alert('Booking success');
-      history('/');
+      history('/bookingmanagement');
     } catch (error) {
       console.error('Error booking room:', error);
     }
