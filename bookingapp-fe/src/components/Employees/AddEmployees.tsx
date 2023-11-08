@@ -10,6 +10,9 @@ const AddEmployee = () => {
   const [email, setAddEmail] = useState("");
   const [phone_number, setAddNumber] = useState(" ");
   const [password, setAddpass] = useState(" ");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const token1 = localStorage.getItem('access_token');
+
 
 
 
@@ -25,13 +28,7 @@ const AddEmployee = () => {
   }, []);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const handleSubmit = () => {
-    // const newEmployee = {
-    //     employee_id : employees.length +1,
-    //     employee_name ,
-    //     email,
-    //     phone_number,
-    //     password
-    // };
+    
     axios
       .post(url + "/employees", {
         employee_id: employees.length + 1,
@@ -39,6 +36,12 @@ const AddEmployee = () => {
         email,
         phone_number,
         password
+      },{
+        headers: {
+          Authorization: `Bearer ${token1}`,
+
+        }
+
       }).then((res) => {
         setEmployees(res.data.employees);
         console.log("add", employees)
@@ -96,29 +99,53 @@ const AddEmployee = () => {
             colon={false}
             style={{ maxWidth: 600 }}
           >
-            <Form.Item label="Name" name="name" rules={[{ required: true }]}>
-              <Input value={employee_name} onChange={onchangeName} required />
+            <Form.Item 
+            label="Name" 
+            name="name" 
+            rules={[
+              { required: true , message: "Name is required"}
+
+              ]}
+              validateStatus={errors.name ? 'error' : ''}
+            help={errors.name}
+              >
+              <Input 
+              value={employee_name} 
+              placeholder="Employee Name"
+              onChange={onchangeName} required />
             </Form.Item>
 
             <Form.Item label="Email" name="email" rules={[
-              { required: true, message: 'Please input your email!' },
-              { pattern: /^[\w-]+(\.[\w-]+)*@hotmail\.com$|^[\w-]+(\.[\w-]+)*@outlook\.com$|^[\w-]+(\.[\w-]+)*@gmail\.com$/, message: 'hãy nhập email có dang @gmail.com!' }
-            ]} >
-              <Input value={email} type="email" onChange={onchangeEmail} required />
+              { required: true, message: 'Please input email!' },
+              { type: 'email', message: 'Invalid email format' },
+              
+            ]} 
+            validateStatus={errors.email ? 'error' : ''}
+            help={errors.email}
+            >
+              <Input  
+              value={email} 
+              placeholder='Email'
+              type="email" 
+              onChange={onchangeEmail} required />
             </Form.Item>
             <Form.Item
               label="Phone Number"
               name="number"
-              rules={[{ required: true }]}
+              rules={[{ required: true, message: 'Please input phone-number!' }]}
+              validateStatus={errors.number ? 'error' : ''}
+            help={errors.number}
             >
-              <Input value={phone_number} pattern="[0-9]{1,10}" type="tel" maxLength={10} onChange={onchangephone} required />
+              <Input placeholder="Number" value={phone_number} pattern="[0-9]{1,10}" type="tel" maxLength={10} onChange={onchangephone} required />
             </Form.Item>
             <Form.Item
               label="Password"
               name="password"
-              rules={[{ required: true }]}
+              rules={[{ required: true ,message: 'Please input phone-number!'}]}
+              validateStatus={errors.password ? 'error' : ''}
+            help={errors.password}
             >
-              <Input value={password} type="password" onChange={onchangepass} required />
+              <Input placeholder="Password" value={password} type="password" onChange={onchangepass} required />
             </Form.Item>
           </Form>
         </div>
