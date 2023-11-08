@@ -8,7 +8,7 @@ import FormLogin from './components/Form/Form';
 import ProtectedRoute from './route/ProtectedRoute';
 import PrivateRoute from './route/PrivateRoute';
   import EmployeesManager from './components/Employees/EmployeesManager';
-import BookingManager from './components/Booking/BookingManager';
+// import BookingManager from './components/Booking/BookingManager';
 
 const App: React.FC = () => {
   return (
@@ -21,7 +21,7 @@ const App: React.FC = () => {
                     <Route element = { <Home/>}  path='/'   />
                     <Route element = { <CreateRoom/> } path='/add' />
                     <Route path='employeesmanager' element={<EmployeesManager />}/>
-                    <Route path='bookingmanagement' element={<BookingManager/>}/>
+                    {/* <Route path='bookingmanagement' element={<BookingManager/>}/> */}
                    </Route>
                 </Route>
             </Route>
