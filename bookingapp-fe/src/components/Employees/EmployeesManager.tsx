@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Avatar, Card, Form, Input, Modal, Popconfirm } from "antd";
+import { Avatar, Card, Form, Input, Modal } from "antd";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { EmployeeType } from "./EmployeeType";
 import AddEmployee from "./AddEmployees";
@@ -16,11 +16,22 @@ const EmployeesManager = () => {
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeType | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const token1 = localStorage.getItem('access_token');
+
 
   useEffect(() => {
     axios
       .get(url + "/employees", {
         withCredentials: true,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'ngrok-skip-browser-warning': 'any',
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Ngrok-Trace-Id': 'bc47d5235e969cbcdd63082f9efdeb9c',
+          Server: 'Werkzeug/3.0.0 Python/3.12.0',
+          'cache-control': 'no-cache,private',
+          Authorization: `Bearer ${token1}`,
+        },
       })
       .then((res) => {
         setEmployees(res.data.employees);
@@ -30,7 +41,13 @@ const EmployeesManager = () => {
 
   const handleDelete = (id: any) => {
     axios
-      .delete(url + "/employees/" + id)
+      .delete(url + "/employees/" + id,
+      {
+        headers: {
+          Authorization: `Bearer ${token1}`
+        }
+      }
+      )
       .then((res) => {
         setEmployees(res.data.employee);
         alert("Successfully delete employees");
@@ -47,6 +64,11 @@ const EmployeesManager = () => {
           employee_name,
           email,
           phone_number: employee_number,
+        },
+        {
+          headers:{
+            Authorization: `Bearer ${token1}`
+          }
         })
         .then((res) => {
           setEmployees(res.data.employee);
@@ -101,19 +123,16 @@ const EmployeesManager = () => {
                 actions={[
                   <EditOutlined onClick={() => handleToggleEdit(employee)} />,
                   <DeleteOutlined
-                    //  onClick={() => handleDelete(employee.employee_id)} 
-                    onClick={()=>{
-                      <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(employee.employee_id)}>
-                      <a>Delete</a>
-                    </Popconfirm>
-
-                    } }
-                  //           render: (_, record: { key: React.Key }) =>
-                  //  (
-                    // <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(employee.employee_id)}>
+                  style={{color: "#ff4d4f"}}
+                     onClick={() => handleDelete(employee.employee_id)
+                    
+                    } 
+                    // onClick={()=>{
+                    //   <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(employee.employee_id)}>
                     //   <a>Delete</a>
                     // </Popconfirm>
-                  // ) : null,
+
+                    // } }
                   />,
                 ]}
               >
