@@ -176,7 +176,14 @@ const BookingFormPage: React.FC<{ selectedRoom: Room | null }> = ({
         </Row>
 
         <Col span={12}>
-          <Form.Item label='Nhân viên' required>
+          <Form.Item label='Nhân viên'
+            name='employee_id'
+           required
+           rules={[{
+            required:true,
+            message:'Vui lòng chọn nhân viên !!!',
+           }]}
+           >
             <Select
               placeholder='Chọn nhân viên'
               onChange={handleEmployeeSelection}
