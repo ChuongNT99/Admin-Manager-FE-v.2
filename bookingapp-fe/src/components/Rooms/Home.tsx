@@ -20,6 +20,8 @@ const Home: React.FC = () => {
   const [showBookingForm, setShowBookingForm] = useState(false);
   const token1 = localStorage.getItem('access_token');
   const [loading, setLoading] = useState<boolean>(false);
+  const [errorVisible, setErrorVisible] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const Navigate = useNavigate();
 
   const url: string = 'https://a71f-210-245-110-144.ngrok-free.app';
@@ -39,8 +41,9 @@ const Home: React.FC = () => {
         },
       });
       setRooms(response.data.rooms);
-    } catch (error) {
-      console.log(error);
+    } catch (error: any | null) {
+      setErrorMessage(error);
+      setErrorVisible(true);
     }
   };
 
@@ -50,12 +53,12 @@ const Home: React.FC = () => {
 
   const handleShowAdd = () => {
     Navigate('/add');
-  }
+  };
 
-  const handleModalDelete = (id: number,name: string) => {
+  const handleModalDelete = (id: number, name: string) => {
     setSelectedRoom({ room_id: id, room_name: name, status: false });
     setShowDeleteModal(true);
-  }
+  };
   const handleDelete = async () => {
     try {
       setLoading(true);
@@ -71,10 +74,12 @@ const Home: React.FC = () => {
         setIsAlertVisible(true);
         setTimeout(() => {
           setIsAlertVisible(false);
-        }, 1000);
+        }, 3000);
       }
-    } catch (error) {
-      console.log(error);
+    } catch (error: any) {
+      setShowDeleteModal(false);
+      setErrorMessage(error);
+      setErrorVisible(true);
     }
     setLoading(false);
   };
@@ -101,8 +106,9 @@ const Home: React.FC = () => {
         fetchData();
         setShowEditModal(false);
       }
-    } catch (error) {
-      console.log(error);
+    } catch (error: any) {
+      setErrorMessage(error);
+      setErrorVisible(true);
     }
     setLoading(false);
   };
@@ -120,135 +126,169 @@ const Home: React.FC = () => {
     setShowBookingForm(true);
   };
   return (
-    <div
-      style={{
-        pointerEvents: loading ? 'none' : 'auto',
-        opacity: loading ? 0.5 : 1,
-        position:'relative'
-      }}
-    >
-      {isAlertVisible && <Alert message={alertMessage} type='success' />}
-      <div className='action' >
-        <div className='card-group' style={{ display: 'flex', justifyContent:'space-evenly',flexWrap:'wrap' }}>
-          {rooms.map((room, key) => {
-            return (
-              <Card
-                key={key}
-                className='room-card'
-                style={{
-                  width: '25%',
-                  height: '30%',
-                  margin: '10px',
-                  padding: '5px',
-                  border: '2px solid #dadada',
-                  borderRadius: '1rem',
-                }}
-              >
-                <Card.Meta
-                  title={
-                    <div>
-                      <h2>{room.room_name}</h2>
-                    </div>
-                  }
-                  description={
-                    <div>
+    <>
+      {showBookingForm ? (
+        <BookingFormPage selectedRoom={selectedRoom} />
+      ) : (
+        <div
+          style={{
+            pointerEvents: loading ? 'none' : 'auto',
+            opacity: loading ? 0.5 : 1,
+          }}
+        >
+          <div className='action'>
+            {isAlertVisible && <Alert message={alertMessage} type='success' />}
+            <div
+              className='card-group'
+              style={{
+                display: 'flex',
+                justifyContent: 'space-evenly',
+                flexWrap: 'wrap',
+              }}
+            >
+              {rooms.map(room => (
+                <Card
+                  key={room.room_id}
+                  className='room-card'
+                  style={{
+                    width: '25%',
+                    height: '30%',
+                    margin: '10px',
+                    padding: '5px',
+                    border: '2px solid #dadada',
+                    borderRadius: '1rem',
+                  }}
+                >
+                  <Card.Meta
+                    title={
                       <div>
-                        <p
+                        <h2>{room.room_name}</h2>
+                      </div>
+                    }
+                    description={
+                      <div>
+                        <div>
+                          <p
+                            style={{
+                              color: room.status ? 'red' : 'black',
+                              fontSize: '20px',
+                            }}
+                          >
+                            Trạng thái:{' '}
+                            {room.status ? 'Có người đang họp' : 'Rảnh'}
+                          </p>
+                        </div>
+                        <div
                           style={{
-                            color: room.status ? 'red' : 'black',
-                            fontSize: '20px',
+                            display: 'flex',
+                            justifyContent: 'space-between',
                           }}
                         >
-                          Trạng thái: {' '}
-                          {room.status ? 'Có người đang họp' : 'Rảnh'}
-                        </p>
+                          <Button onClick={() => handleToggleBookingForm(room)}>
+                            Booking
+                          </Button>
+                          <Button
+                            danger
+                            onClick={() =>
+                              handleModalDelete(room.room_id, room.room_name)
+                            }
+                          >
+                            Delete
+                          </Button>
+                          <Button
+                            onClick={() =>
+                              handleEdit(room.room_id, room.room_name)
+                            }
+                          >
+                            Edit
+                          </Button>
+                        </div>
                       </div>
-                      <div
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                        }}
-                      >
-                        <Button onClick={() => handleToggleBookingForm(room)}>
-                          Booking
-                        </Button>
-                        <Button danger onClick={() => handleModalDelete(room.room_id,room.room_name)}>
-                          Delete
-                        </Button>
-                        <Button
-                          onClick={() =>
-                            handleEdit(room.room_id, room.room_name)
-                          }
-                        >
-                          Edit
-                        </Button>
-                      </div>
-                    </div>
-                  }
-                />
-              </Card>
-            );
-          })}
-        </div>
-        <Button
-        onClick={handleShowAdd}
-        style={{
-          position:'absolute',
-          top:'-5%',
-          right:'-2%',
-          background:'#dadada',
-          border:'0.5% solid black',
-          borderRadius:'2px'
-        }}
-        >
-          Add
-        </Button>
-      </div>
-
-      <Modal
-        title='Edit Room'
-        open={showEditModal}
-        onCancel={handleCloseEditModal}
-        footer={null}
-      >
-        <Form>
-          <Form.Item>
-            <Input
-              type='text'
-              value={roomName}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setRoomName(e.target.value)
-              }
-            />
-          </Form.Item>
-          <Form.Item>
+                    }
+                  />
+                </Card>
+              ))}
+            </div>
             <Button
-              type='primary'
-              onClick={handleUpdate}
+              onClick={handleShowAdd}
+              style={{
+                marginTop: '10px',
+                background: '#dadada',
+                borderRadius: '2px',
+                position: 'absolute',
+                top: '12%',
+                right: '1.74%',
+              }}
+            >
+              Add
+            </Button>
+          </div>
+
+          <Modal
+            title='Edit Room'
+            visible={showEditModal}
+            onCancel={handleCloseEditModal}
+            footer={null}
+          >
+            <Form>
+              <Form.Item>
+                <Input
+                  type='text'
+                  value={roomName}
+                  onChange={e => setRoomName(e.target.value)}
+                />
+              </Form.Item>
+              <Form.Item>
+                <Button
+                  type='primary'
+                  onClick={handleUpdate}
+                  style={{ marginRight: '5px' }}
+                >
+                  Save Changes
+                </Button>
+                <Button onClick={handleCloseEditModal}>Cancel</Button>
+              </Form.Item>
+            </Form>
+          </Modal>
+
+          <Modal
+            title='Delete Room'
+            visible={showDeleteModal}
+            onCancel={handleCloseDeleteModal}
+            footer={null}
+          >
+            <p>
+              Bạn có muốn xoá phòng này "{selectedRoom?.room_name}" hay không?
+            </p>
+            <Button
+              danger
+              onClick={handleDelete}
               style={{ marginRight: '5px' }}
             >
-              Save Changes
+              Delete
             </Button>
-            <Button onClick={handleCloseEditModal}>Cancel</Button>
-          </Form.Item>
-        </Form>
-      </Modal>
+            <Button onClick={handleCloseDeleteModal}>Cancel</Button>
+          </Modal>
 
-      <Modal
-        title='Delete Room'
-        visible={showDeleteModal}
-        onCancel={handleCloseDeleteModal}
-        footer={null}
-      >
-        <p>Bạn có muốn xoá phòng này "{selectedRoom?.room_name}" hay không?</p>
-        <Button danger onClick={handleDelete} style={{ marginRight: '5px' }}>
-          Delete
-        </Button>
-        <Button onClick={handleCloseDeleteModal}>Cancel</Button>
-      </Modal>
-
-      {showBookingForm && <BookingFormPage selectedRoom={selectedRoom} />}
-    </div>
+          <Modal
+            title='Lỗi'
+            visible={errorVisible}
+            onCancel={() => setErrorVisible(false)}
+            footer={[
+              <Button
+                key='ok'
+                type='primary'
+                onClick={() => setErrorVisible(false)}
+              >
+                OK
+              </Button>,
+            ]}
+          >
+            <p>{errorMessage}</p>
+          </Modal>
+        </div>
+      )}
+    </>
   );
 };
 

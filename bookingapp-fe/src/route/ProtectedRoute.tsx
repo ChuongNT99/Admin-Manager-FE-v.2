@@ -3,10 +3,9 @@ import  { useSelector } from 'react-redux'
 import { RootState } from "../components/reducers/store";
 
 const ProtectedRoute  = () => {
-  const storedRole = localStorage.getItem('role');
-  const role: boolean = storedRole ? storedRole === 'true' : false;
+  const token = localStorage.getItem('access_token');
   return (
-      (role !== null) ? <Outlet/> : <Navigate to = "/login"/>
+      (token !== null) ? <Outlet/> : <Navigate to = "/login"/>
   );
 }
 
