@@ -138,6 +138,7 @@ const Home: React.FC = () => {
         >
           <div className='action'>
             {isAlertVisible && <Alert message={alertMessage} type='success' />}
+            {errorVisible && <Alert message={errorMessage} type='error' />}
             <div
               className='card-group'
               style={{
@@ -175,7 +176,7 @@ const Home: React.FC = () => {
                             }}
                           >
                             Trạng thái:{' '}
-                            {room.status ? 'Có người đang họp' : 'Rảnh'}
+                            {room.status ? 'Bận' : 'Rảnh'}
                           </p>
                         </div>
                         <div
@@ -268,23 +269,6 @@ const Home: React.FC = () => {
               Delete
             </Button>
             <Button onClick={handleCloseDeleteModal}>Cancel</Button>
-          </Modal>
-
-          <Modal
-            title='Lỗi'
-            visible={errorVisible}
-            onCancel={() => setErrorVisible(false)}
-            footer={[
-              <Button
-                key='ok'
-                type='primary'
-                onClick={() => setErrorVisible(false)}
-              >
-                OK
-              </Button>,
-            ]}
-          >
-            <p>{errorMessage}</p>
           </Modal>
         </div>
       )}
