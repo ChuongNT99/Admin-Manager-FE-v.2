@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { MailOutlined, LockOutlined } from '@ant-design/icons';
 import { Button, Form, Input } from 'antd';
 import { jwtDecode } from 'jwt-decode';
@@ -11,7 +11,9 @@ interface User {
   role: boolean;
 }
 
-const url: string = 'https://a71f-210-245-110-144.ngrok-free.app';
+
+
+const url: string = 'https://3d0d-210-245-110-144.ngrok-free.app';
 const FormLogin: React.FC = () => {
   const navigate = useNavigate();
   // const dispatch = useDispatch();
@@ -21,21 +23,25 @@ const FormLogin: React.FC = () => {
 
   const onFinish = async (values: any) => {
     setLoading(true);
-    console.log(values);
     await axios
       .post(url + '/login', values, {
         withCredentials: true,
       })
       .then(res => {
-        alert('Đăng nhập thành công');
         localStorage.setItem('access_token', res.data);
         const token: string = res.data.access_token;
         const decodedToken = jwtDecode(token) as User;
         const role: boolean = decodedToken.role;
+        
         localStorage.setItem('access_token', token);
         localStorage.setItem('role', String(role));
         // dispatch(setAuthData({ role, token }));
-        navigate('/');
+        
+        if(role === true){
+          navigate('/home');
+        }else if(role === false){
+          navigate('/');
+        }
       })
       .catch(message => {
         alert(message);
@@ -58,9 +64,10 @@ const FormLogin: React.FC = () => {
           maxWidth: '400px',
           margin: '0 auto',
           marginTop: '100px',
-          border: '1px solid black',
+          // border: '1px solid black',
           padding: '2rem',
           borderRadius: '3rem',
+          backgroundColor: '#DBE0E7'
         }}
       >
         <h1 style={{ textAlign: 'center', marginBottom: '20px' }}>
@@ -82,7 +89,7 @@ const FormLogin: React.FC = () => {
             <Input
               prefix={<MailOutlined style={{ marginRight: '10px' }} />}
               placeholder='Email'
-              style={{ padding: '16px', fontSize: '16px' }}
+              style={{ padding: '16px', fontSize: '16px' ,outline:'none',border:'none'}}
               disabled={loading}
             />
           </Form.Item>
@@ -96,7 +103,7 @@ const FormLogin: React.FC = () => {
             <Input.Password
               prefix={<LockOutlined style={{ marginRight: '10px' }} />}
               placeholder='Password'
-              style={{ padding: '16px', fontSize: '16px' }}
+              style={{ padding: '16px', fontSize: '16px',outline:'none',border:'none' }}
               disabled={loading}
             />
           </Form.Item>
