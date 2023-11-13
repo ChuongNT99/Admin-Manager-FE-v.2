@@ -1,30 +1,47 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { MailOutlined, LockOutlined } from '@ant-design/icons';
-import { Button, Form, Input, message } from 'antd';
+import { Button, Form, Input } from 'antd';
+import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
+// import { useDispatch } from 'react-redux';
+// import { setAuthData } from '../reducers/authSlice';
+import { useNavigate } from 'react-router-dom';
+interface User {
+  sub: number;
+  role: boolean;
+}
 
-const url: string = 'https://36c1-210-245-110-144.ngrok-free.app';
+
+
+const url: string = 'https://3d0d-210-245-110-144.ngrok-free.app';
 const FormLogin: React.FC = () => {
+  const navigate = useNavigate();
+  // const dispatch = useDispatch();
   const [form] = Form.useForm();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState<boolean>(false);
 
   const onFinish = async (values: any) => {
     setLoading(true);
-    console.log(values);
     await axios
       .post(url + '/login', values, {
         withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json',
-          Server: 'Werkzeug/3.0.0 Python/3.12.0',
-          'cache-control': 'no-cache,private',
-        },
       })
       .then(res => {
-        const token = res.data.token;
-        alert('Đăng nhập thành công');
-        localStorage.setItem('token', token);
+        localStorage.setItem('access_token', res.data);
+        const token: string = res.data.access_token;
+        const decodedToken = jwtDecode(token) as User;
+        const role: boolean = decodedToken.role;
+        
+        localStorage.setItem('access_token', token);
+        localStorage.setItem('role', String(role));
+        // dispatch(setAuthData({ role, token }));
+        
+        if(role === true){
+          navigate('/home');
+        }else if(role === false){
+          navigate('/');
+        }
       })
       .catch(message => {
         alert(message);
@@ -47,9 +64,10 @@ const FormLogin: React.FC = () => {
           maxWidth: '400px',
           margin: '0 auto',
           marginTop: '100px',
-          border: '1px solid black',
+          // border: '1px solid black',
           padding: '2rem',
           borderRadius: '3rem',
+          backgroundColor: '#DBE0E7'
         }}
       >
         <h1 style={{ textAlign: 'center', marginBottom: '20px' }}>
@@ -71,7 +89,7 @@ const FormLogin: React.FC = () => {
             <Input
               prefix={<MailOutlined style={{ marginRight: '10px' }} />}
               placeholder='Email'
-              style={{ padding: '16px', fontSize: '16px' }}
+              style={{ padding: '16px', fontSize: '16px' ,outline:'none',border:'none'}}
               disabled={loading}
             />
           </Form.Item>
@@ -85,7 +103,7 @@ const FormLogin: React.FC = () => {
             <Input.Password
               prefix={<LockOutlined style={{ marginRight: '10px' }} />}
               placeholder='Password'
-              style={{ padding: '16px', fontSize: '16px' }}
+              style={{ padding: '16px', fontSize: '16px',outline:'none',border:'none' }}
               disabled={loading}
             />
           </Form.Item>
