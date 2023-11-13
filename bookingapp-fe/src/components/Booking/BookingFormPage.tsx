@@ -1,13 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Select, Button, DatePicker, Form, Row, Col, Typography } from 'antd';
+import {
+  Select,
+  Button,
+  DatePicker,
+  Form,
+  Row,
+  Col,
+  Typography,
+  Alert,
+  Space,
+  Card,
+} from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 
 const { Option } = Select;
 const { Title } = Typography;
 
-const url = 'https://a71f-210-245-110-144.ngrok-free.app';
+const url = "https://3d0d-210-245-110-144.ngrok-free.app";
+
 
 interface Employee {
   employee_id: number;
@@ -39,6 +51,8 @@ const BookingFormPage: React.FC<{ selectedRoom: Room | null }> = ({
   });
   const [employees, setEmployees] = useState<Employee[]>([]);
   const token = localStorage.getItem('access_token');
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const fetchData = async () => {
     try {
@@ -58,8 +72,12 @@ const BookingFormPage: React.FC<{ selectedRoom: Room | null }> = ({
         }
       );
       setEmployees(response.data.employees);
-    } catch (error) {
-      console.error('Error fetching employees:', error);
+    } catch (error : any) {
+      setErrorMessage(error.response.data.error);
+      setErrorVisible(true);
+      setTimeout(() => {
+        setErrorVisible(false);
+      }, 3000);
     }
 
     const currentTime = new Date().toLocaleString();
@@ -115,94 +133,125 @@ const BookingFormPage: React.FC<{ selectedRoom: Room | null }> = ({
 
       alert('Booking success');
       history('/bookingmanagement');
-    } catch (error) {
-      console.error('Error booking room:', error);
+    } catch (error: any) {
+      setErrorMessage(error.response.data.error);
+      setErrorVisible(true);
+      setTimeout(() => {
+        setErrorVisible(false);
+      }, 3000);
     }
   };
   const handleFormSubmit = () => {
     handleSubmit();
   };
+return (
+    <div
+      style={{ display: 'flex', justifyContent: 'center', maxHeight: '100vh' }}
+    >
+      <Card
+        style={{
+          width: '500px',
+          padding: '24px',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)',
+        }}
+      >
+        <Space direction='vertical' size='middle'>
+          <Title
+            level={2}
+            style={{ display: 'flex', justifyContent: 'center' }}
+          >
+            Đặt phòng
+          </Title>
+          {errorVisible && (
+            <Alert message={errorMessage} type='error' closable />
+          )}
+          <p style={{ fontSize: '18px' }}>
+            Phòng đã chọn: {selectedRoom?.room_name}
+          </p>
+          <p>Ngày hiện tại: {currentTime}</p>
 
-  return (
-    <div>
-      <Title level={2}>Đặt phòng</Title>
-      <p>Phòng đã chọn: {selectedRoom?.room_name}</p>
-      <p>Ngày hiện tại: {currentTime}</p>
+          <Form layout='vertical' onFinish={handleFormSubmit}>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  label='Thời gian bắt đầu'
+                  name='time_start'
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Vui lòng chọn thời gian bắt đầu',
+                    },
+                  ]}
+                >
+                  <DatePicker
+                    showTime
+                    name='time_start'
+                    value={bookingData.time_start}
+                    onChange={(date, dateString) =>
+                      handleBookingDataChange('time_start', date)
+                    }
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  label='Thời gian kết thúc'
+                  name='time_end'
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Vui lòng chọn thời gian kết thúc',
+                    },
+                  ]}
+                >
+                  <DatePicker
+                    showTime
+                    name='time_end'
+                    value={bookingData.time_end}
+                    onChange={(date, dateString) =>
+                      handleBookingDataChange('time_end', date)
+                    }
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
 
-      <Form layout='vertical' onFinish={handleFormSubmit}>
-        <Row gutter={16}>
-          <Col span={12}>
             <Form.Item
-              label='Thời gian bắt đầu'
-              name='time_start'
+              label='Nhân viên'
+              name='employee_id'
+              required
               rules={[
                 {
                   required: true,
-                  message: 'Vui lòng chọn thời gian bắt đầu',
+                  message: 'Vui lòng chọn nhân viên',
                 },
               ]}
             >
-              <DatePicker
-                showTime
-                name='time_start'
-                value={bookingData.time_start}
-                onChange={(date, dateString) =>
-                  handleBookingDataChange('time_start', date)
-                }
-              />
+              <Select
+                placeholder='Chọn nhân viên'
+                onChange={handleEmployeeSelection}
+                value={bookingData.employee_id}
+                mode='multiple'
+              >
+                {employees.map(employee => (
+                  <Option
+                    key={employee.employee_id}
+                    value={employee.employee_id}
+                  >
+                    {employee.employee_name}
+                  </Option>
+                ))}
+              </Select>
             </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item
-              label='Thời gian kết thúc'
-              name='time_end'
-              rules={[
-                {
-                  required: true,
-                  message: 'Vui lòng chọn thời gian kết thúc',
-                },
-              ]}
-            >
-              <DatePicker
-                showTime
-                name='time_end'
-                value={bookingData.time_end}
-                onChange={(date, dateString) =>
-                  handleBookingDataChange('time_end', date)
-                }
-              />
+
+            <Form.Item>
+              <Button type='primary' htmlType='submit'>
+                Đặt phòng
+              </Button>
             </Form.Item>
-          </Col>
-        </Row>
-
-        <Col span={12}>
-          <Form.Item label='Nhân viên'
-            name='employee_id'
-           required
-           rules={[{
-            required:true,
-            message:'Vui lòng chọn nhân viên !!!',
-           }]}
-           >
-            <Select
-              placeholder='Chọn nhân viên'
-              onChange={handleEmployeeSelection}
-              value={bookingData.employee_id}
-              mode='multiple'
-            >
-              {employees.map(employee => (
-                <Option key={employee.employee_id} value={employee.employee_id}>
-                  {employee.employee_name}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-        </Col>
-
-        <Button type='primary' htmlType='submit'>
-          Đặt phòng
-        </Button>
-      </Form>
+          </Form>
+        </Space>
+      </Card>
     </div>
   );
 };
