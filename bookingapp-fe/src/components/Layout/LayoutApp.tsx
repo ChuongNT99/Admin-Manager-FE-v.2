@@ -1,4 +1,3 @@
-// Import các thư viện cần thiết
 import React, { useState } from 'react';
 import { useNavigate, Outlet } from 'react-router-dom';
 import {
@@ -9,25 +8,28 @@ import {
   SelectOutlined,
   LogoutOutlined,
 } from '@ant-design/icons';
-import { Layout, Menu, Button, theme } from 'antd';
+import { Layout, Menu, Button} from 'antd';
 const { Header, Sider, Content } = Layout;
-
 const LayoutApp = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const {
-    token: { colorBgContainer },
-  } = theme.useToken();
-  const navigator = useNavigate();
+  const storedRole = localStorage.getItem('role');
+  const role: boolean = storedRole ? storedRole === 'true' : false;
+  const navigator = useNavigate()
 
+  // Logout
   const handleLogout = () => {
     localStorage.clear();
     navigator('/login');
   };
-
   return (
-    <Layout>
-      <Sider trigger={null} collapsible collapsed={collapsed}>
-        <div className="demo-logo-vertical" />
+    <Layout style={{borderRadius:30}}  >
+      <Sider 
+      style={{  borderTopLeftRadius: 30, borderBottomLeftRadius: 30}} 
+      trigger={null} 
+      collapsible 
+      collapsed={collapsed}
+      >
+        <div className="demo-logo-vertical"  style={{background:'pink'}}/>
         <Button
           type="text"
           icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
@@ -48,19 +50,21 @@ const LayoutApp = () => {
               navigator(key);
             }
           }}
-          theme="dark"
+          theme= 'dark'
           mode="inline"
-          defaultSelectedKeys={['/']}
+
           items={[
             {
-              key: '/',
+              key: (role === true) ? '/home' : '/',
               icon: <HomeOutlined />,
               label: 'Home',
+
             },
             {
               key: '/employeesmanager',
               icon: <UserOutlined />,
               label: 'Employees Manager',
+
             },
             {
               key: '/bookingmanagement',
@@ -75,23 +79,27 @@ const LayoutApp = () => {
           ]}
         />
       </Sider>
-      <Layout>
-        <Header
+      <Layout style={{borderTopRightRadius:30, borderBottomRightRadius:30, background:'#69b1ff'}} >
+        {/* <Header 
           style={{
             padding: 0,
             background: 'dark',
+            borderTopRightRadius: 30
           }}
         >
           <p style={{ color: 'white', fontSize: 20, marginLeft: 24, marginTop: 0 }}>
             <b>Website booking room meeting</b>
           </p>
-        </Header>
+        </Header> */}
         <Content
           style={{
-            margin: '24px 16px',
+            margin: 16,
             padding: 24,
-            minHeight: 600,
-            background: colorBgContainer,
+            minHeight: 670,
+            background: 'white',
+            borderBottomRightRadius: 30,
+            borderTopRightRadius: 30
+            // opacity: '0.8'
           }}
         >
           <Outlet />
