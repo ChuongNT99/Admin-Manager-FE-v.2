@@ -2,23 +2,16 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Select, Button, DatePicker, Form, Row, Col, Typography } from 'antd';
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 
 const { Option } = Select;
 const { Title } = Typography;
 
-const url = 'https://f255-210-245-110-144.ngrok-free.app';
+const url = 'https://a71f-210-245-110-144.ngrok-free.app';
 
 interface Employee {
-  employees_id: number;
-  employees_name: string;
-}
-
-interface BookingData {
-  room_id: number;
-  time_start_booking: dayjs.Dayjs;
-  time_end_booking: dayjs.Dayjs;
   employee_id: number;
+  employee_name: string;
 }
 
 interface Room {
@@ -26,25 +19,45 @@ interface Room {
   room_name: string;
 }
 
-const BookingFormPage: React.FC<{ selectedRoom: Room }> = ({
+interface BookingData {
+  room_id: number;
+  time_start: Dayjs;
+  time_end: Dayjs;
+  employee_id: number[];
+}
+
+const BookingFormPage: React.FC<{ selectedRoom: Room | null }> = ({
   selectedRoom,
 }) => {
   const history = useNavigate();
   const [currentTime, setCurrentTime] = useState('');
   const [bookingData, setBookingData] = useState<BookingData>({
     room_id: selectedRoom?.room_id || 0,
-    time_start_booking: dayjs(),
-    time_end_booking: dayjs(),
-    employee_id: 0,
+    time_start: dayjs(),
+    time_end: dayjs(),
+    employee_id: [],
   });
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const token = localStorage.getItem('access_token');
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(url + '/employee', {
-        withCredentials: true,
-      });
-      setEmployees(response.data.employee);
+      const response = await axios.get<{ employees: Employee[] }>(
+        url + '/employees',
+        {
+          withCredentials: true,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'ngrok-skip-browser-warning': 'any',
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Ngrok-Trace-Id': 'bc47d5235e969cbcdd63082f9efdeb9c',
+            Server: 'Werkzeug/3.0.0 Python/3.12.0',
+            'cache-control': 'no-cache,private',
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setEmployees(response.data.employees);
     } catch (error) {
       console.error('Error fetching employees:', error);
     }
@@ -66,8 +79,11 @@ const BookingFormPage: React.FC<{ selectedRoom: Room }> = ({
     }
   }, [selectedRoom]);
 
-  const handleBookingDataChange = (name: string, value: dayjs.Dayjs | null) => {
-    if (value) {
+  const handleBookingDataChange = (
+    name: keyof BookingData,
+    value: Dayjs | null
+  ) => {
+    if (value !== null) {
       setBookingData(prevData => ({
         ...prevData,
         [name]: value,
@@ -75,7 +91,7 @@ const BookingFormPage: React.FC<{ selectedRoom: Room }> = ({
     }
   };
 
-  const handleEmployeeSelection = (employeeId: number) => {
+  const handleEmployeeSelection = (employeeId: number[]) => {
     setBookingData(prevData => ({
       ...prevData,
       employee_id: employeeId,
@@ -84,19 +100,26 @@ const BookingFormPage: React.FC<{ selectedRoom: Room }> = ({
 
   const handleSubmit = async () => {
     try {
-      await axios.post(url + '/bookings', bookingData, {
+      const formattedBookingData = {
+        ...bookingData,
+        time_start: bookingData.time_start.format(),
+        time_end: bookingData.time_end.format(),
+      };
+
+      await axios.post(url + '/bookings', formattedBookingData, {
         withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       alert('Booking success');
-      history('/other-page');
+      history('/bookingmanagement');
     } catch (error) {
       console.error('Error booking room:', error);
     }
   };
-
-  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleFormSubmit = () => {
     handleSubmit();
   };
 
@@ -109,57 +132,76 @@ const BookingFormPage: React.FC<{ selectedRoom: Room }> = ({
       <Form layout='vertical' onFinish={handleFormSubmit}>
         <Row gutter={16}>
           <Col span={12}>
-            <Form.Item label='Thời gian bắt đầu' required>
+            <Form.Item
+              label='Thời gian bắt đầu'
+              name='time_start'
+              rules={[
+                {
+                  required: true,
+                  message: 'Vui lòng chọn thời gian bắt đầu',
+                },
+              ]}
+            >
               <DatePicker
                 showTime
-                name='time_start_booking'
-                value={bookingData.time_start_booking}
+                name='time_start'
+                value={bookingData.time_start}
                 onChange={(date, dateString) =>
-                  handleBookingDataChange('time_start_booking', date)
+                  handleBookingDataChange('time_start', date)
                 }
               />
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item label='Thời gian kết thúc' required>
+            <Form.Item
+              label='Thời gian kết thúc'
+              name='time_end'
+              rules={[
+                {
+                  required: true,
+                  message: 'Vui lòng chọn thời gian kết thúc',
+                },
+              ]}
+            >
               <DatePicker
                 showTime
-                name='time_end_booking'
-                value={bookingData.time_end_booking}
+                name='time_end'
+                value={bookingData.time_end}
                 onChange={(date, dateString) =>
-                  handleBookingDataChange('time_end_booking', date)
+                  handleBookingDataChange('time_end', date)
                 }
               />
             </Form.Item>
           </Col>
         </Row>
 
-        <Row gutter={16}>
-          <Col span={12}>
-            <Form.Item label='Chọn nhân viên' required>
-              <Select
-                value={bookingData.employee_id}
-                onChange={handleEmployeeSelection}
-                placeholder='-- Chọn nhân viên --'
-              >
-                {employees.map(employee => (
-                  <Option
-                    key={employee.employees_id}
-                    value={employee.employees_id}
-                  >
-                    {employee.employees_name}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </Col>
-        </Row>
+        <Col span={12}>
+          <Form.Item label='Nhân viên'
+            name='employee_id'
+           required
+           rules={[{
+            required:true,
+            message:'Vui lòng chọn nhân viên !!!',
+           }]}
+           >
+            <Select
+              placeholder='Chọn nhân viên'
+              onChange={handleEmployeeSelection}
+              value={bookingData.employee_id}
+              mode='multiple'
+            >
+              {employees.map(employee => (
+                <Option key={employee.employee_id} value={employee.employee_id}>
+                  {employee.employee_name}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+        </Col>
 
-        <Form.Item>
-          <Button type='primary' htmlType='submit'>
-            Đặt phòng
-          </Button>
-        </Form.Item>
+        <Button type='primary' htmlType='submit'>
+          Đặt phòng
+        </Button>
       </Form>
     </div>
   );
