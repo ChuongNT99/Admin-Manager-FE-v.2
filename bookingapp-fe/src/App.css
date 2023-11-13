@@ -40,3 +40,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
 }
+html{
+  background-color: #91caff;
+  /* background-image: url('../public/klipartz.com.png'); */
+}

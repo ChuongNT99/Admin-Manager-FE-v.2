@@ -1,16 +1,11 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Form, Input, Button, Modal } from 'antd';
 import axios from 'axios';
-// import  { useSelector } from 'react-redux'
-// import { RootState } from '../reducers/store';
 import { useNavigate } from 'react-router-dom';
-
-const url = 'https://a71f-210-245-110-144.ngrok-free.app';
-
+const url = 'https://3d0d-210-245-110-144.ngrok-free.app';
 const CreateRoom: React.FC = () => {
   const navigate = useNavigate();
   const [roomName, setRoomName] = useState<string>('');
-  // const token = useSelector((state: RootState ) => state.auth.token);
   const token1 = localStorage.getItem('access_token');
   const [error, setError] = useState<string>('');
   const [errorVisible, setErrorVisible] = useState(false);
@@ -30,19 +25,22 @@ const CreateRoom: React.FC = () => {
           },
         }
       );
-      navigate('/');
+      navigate('/home');
     } catch (err: any) {
       setErrorVisible(true);
-      setError(err);
+      setError(err.response.data.error);
     }
-    console.log('Thêm phòng:', roomName);
     setRoomName('');
   };
 
   return (
     <>
       <Form layout='inline'>
-        <Form.Item>
+        <Form.Item
+        rules={[{ required: true, message: 'Please input room name!' },
+        { whitespace: true }
+      
+      ]}>
           <Input
             type='text'
             placeholder='Enter room'
@@ -62,12 +60,12 @@ const CreateRoom: React.FC = () => {
       </Form>
       <Modal
         title='Lỗi'
-        visible={errorVisible}
+        open={errorVisible}
         onCancel={() => setErrorVisible(false)}
         footer={[
           <Button
             key='ok'
-            type='primary'
+            type='dashed'
             onClick={() => setErrorVisible(false)}
           >
             OK

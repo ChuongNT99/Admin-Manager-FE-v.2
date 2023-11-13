@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Card, Button, Modal, Alert, Form, Input } from 'antd';
+import { Card, Button, Modal, Alert, Form, Input, Space, Popover } from 'antd';
 import BookingFormPage from '../Booking/BookingFormPage';
 import { useNavigate } from 'react-router-dom';
+import { DeleteOutlined, EditOutlined, SelectOutlined } from '@ant-design/icons';
 interface Room {
   room_id: number;
   room_name: string;
@@ -24,7 +25,7 @@ const Home: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const Navigate = useNavigate();
 
-  const url: string = 'https://a71f-210-245-110-144.ngrok-free.app';
+  const url: string = 'https://3d0d-210-245-110-144.ngrok-free.app';
 
   const fetchData = async () => {
     try {
@@ -77,9 +78,11 @@ const Home: React.FC = () => {
         }, 3000);
       }
     } catch (error: any) {
-      setShowDeleteModal(false);
-      setErrorMessage(error);
+      setErrorMessage(error.response.data.error);
       setErrorVisible(true);
+      setTimeout(() => {
+        setErrorVisible(false);
+      }, 3000);
     }
     setLoading(false);
   };
@@ -107,12 +110,14 @@ const Home: React.FC = () => {
         setShowEditModal(false);
       }
     } catch (error: any) {
-      setErrorMessage(error);
+      setErrorMessage(error.response.data.error);
       setErrorVisible(true);
+      setTimeout(() => {
+        setErrorVisible(false);
+      }, 3000);
     }
     setLoading(false);
   };
-
   const handleCloseEditModal = () => {
     setShowEditModal(false);
   };
@@ -136,9 +141,18 @@ const Home: React.FC = () => {
             opacity: loading ? 0.5 : 1,
           }}
         >
+          <Button
+              onClick={handleShowAdd}
+              style={{
+                marginTop: '10px',
+                borderRadius: '10px',
+               
+              }}
+            >
+              Add Room
+            </Button>
           <div className='action'>
             {isAlertVisible && <Alert message={alertMessage} type='success' />}
-            {errorVisible && <Alert message={errorMessage} type='error' />}
             <div
               className='card-group'
               style={{
@@ -159,6 +173,26 @@ const Home: React.FC = () => {
                     border: '2px solid #dadada',
                     borderRadius: '1rem',
                   }}
+                  actions={[
+                    <Space style={{ width: '100%', justifyContent: 'center', columnGap: '25%' }}>
+                      <Popover content='Booking Room'>
+                        <SelectOutlined onClick={() => handleToggleBookingForm(room)} />
+                      </Popover>
+
+                      <Popover content='Edit Room'>
+                        <EditOutlined onClick={() =>
+                          handleEdit(room.room_id, room.room_name)
+                        } />
+                      </Popover>
+                      <Popover content='Delete Room'>
+                        <DeleteOutlined
+                          style={{ color: "#ff4d4f" }}
+                          onClick={() =>
+                            handleModalDelete(room.room_id, room.room_name)
+                          } />
+                      </Popover>
+                    </Space>
+                  ]}
                 >
                   <Card.Meta
                     title={
@@ -167,7 +201,7 @@ const Home: React.FC = () => {
                       </div>
                     }
                     description={
-                      <div>
+                    
                         <div>
                           <p
                             style={{
@@ -179,59 +213,24 @@ const Home: React.FC = () => {
                             {room.status ? 'Bận' : 'Rảnh'}
                           </p>
                         </div>
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                          }}
-                        >
-                          <Button onClick={() => handleToggleBookingForm(room)}>
-                            Booking
-                          </Button>
-                          <Button
-                            danger
-                            onClick={() =>
-                              handleModalDelete(room.room_id, room.room_name)
-                            }
-                          >
-                            Delete
-                          </Button>
-                          <Button
-                            onClick={() =>
-                              handleEdit(room.room_id, room.room_name)
-                            }
-                          >
-                            Edit
-                          </Button>
-                        </div>
-                      </div>
+                    
                     }
                   />
                 </Card>
               ))}
             </div>
-            <Button
-              onClick={handleShowAdd}
-              style={{
-                marginTop: '10px',
-                background: '#dadada',
-                borderRadius: '2px',
-                position: 'absolute',
-                top: '12%',
-                right: '1.74%',
-              }}
-            >
-              Add
-            </Button>
+            
           </div>
 
           <Modal
             title='Edit Room'
-            visible={showEditModal}
+            open={showEditModal}
             onCancel={handleCloseEditModal}
             footer={null}
           >
+
             <Form>
+              {errorVisible && <Alert message={errorMessage} type='error' />}
               <Form.Item>
                 <Input
                   type='text'
@@ -254,10 +253,11 @@ const Home: React.FC = () => {
 
           <Modal
             title='Delete Room'
-            visible={showDeleteModal}
+            open={showDeleteModal}
             onCancel={handleCloseDeleteModal}
             footer={null}
           >
+            {errorVisible && <Alert message={errorMessage} type='error' />}
             <p>
               Bạn có muốn xoá phòng này "{selectedRoom?.room_name}" hay không?
             </p>
