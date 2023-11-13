@@ -1,59 +1,59 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Avatar, Card, Form, Input, Modal } from "antd";
+import { Button, Card, Form, FormInstance, Input, Modal, Popover, Space } from "antd";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { EmployeeType } from "./EmployeeType";
 import AddEmployee from "./AddEmployees";
 
 const { Meta } = Card;
-const url = "https://a71f-210-245-110-144.ngrok-free.app";
+const url = "https://3d0d-210-245-110-144.ngrok-free.app";
 
 const EmployeesManager = () => {
   const [employees, setEmployees] = useState([] as EmployeeType[]);
   const [employee_name, setEditName] = useState("");
   const [email, setEditEmail] = useState("");
   const [employee_number, setEditNumber] = useState("");
-  const [selectedEmployee, setSelectedEmployee] = useState<EmployeeType | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const token1 = localStorage.getItem('access_token');
+  const [isModalDeleteOpen, setIsModalDeleteOpen] = useState(false);
 
+  const token1 = localStorage.getItem('access_token');
 
   useEffect(() => {
     axios
-      .get(url + "/employees", {
-        withCredentials: true,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'ngrok-skip-browser-warning': 'any',
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Ngrok-Trace-Id': 'bc47d5235e969cbcdd63082f9efdeb9c',
-          Server: 'Werkzeug/3.0.0 Python/3.12.0',
-          'cache-control': 'no-cache,private',
-          Authorization: `Bearer ${token1}`,
-        },
-      })
-      .then((res) => {
-        setEmployees(res.data.employees);
-        console.log(res.data.employees);
-      });
-  }, []);
+        .get(url + "/employees", {
+            withCredentials: true,
+            headers: {
+                'ngrok-skip-browser-warning': 'any',
+                Authorization: `Bearer ${token1}`,
+            },
+        })
+        .then((res) => {
+            setEmployees(res.data.employees);
+        });
+}, []);
+
+  const [selectedEmployee, setSelectedEmployee] = useState<EmployeeType>();
 
   const handleDelete = (id: any) => {
-    axios
-      .delete(url + "/employees/" + id,
-      {
-        headers: {
-          Authorization: `Bearer ${token1}`
-        }
-      }
-      )
-      .then((res) => {
-        setEmployees(res.data.employee);
-        alert("Successfully delete employees");
-        window.location.reload();
-      })
-      .catch((er) => console.log(er));
+    if (selectedEmployee) {
+      const { employee_id } = selectedEmployee;
+      axios
+        .delete(url + "/employees/" + employee_id,
+          {
+            headers: {
+              Authorization: `Bearer ${token1}`
+            }
+          }).then((res) => {
+            setEmployees(res.data.employee);
+            window.location.reload();
+          })
+        .catch((error) => {
+
+          alert(error.response.data.message);
+
+        });
+
+    }
   };
 
   const handleUpdate = () => {
@@ -65,20 +65,29 @@ const EmployeesManager = () => {
           email,
           phone_number: employee_number,
         },
-        {
-          headers:{
-            Authorization: `Bearer ${token1}`
-          }
-        })
-        .then((res) => {
-          setEmployees(res.data.employee);
-          console.log(res.data.employee);
-          alert("Successfully edited new employees");
-          window.location.reload();
-        })
-        .catch((err) => console.log(err));
+          {
+            headers: {
+              Authorization: `Bearer ${token1}`
+            }
+          }).then((res) => {
+            setEmployees(res.data.employee);
+            alert("Successfully edited employees");
+            window.location.reload();
+          })
+        .catch((error) => {
+
+          alert(error.response.data.error);
+
+        });
+
     }
   };
+  const handleToggleDelete = (employee: EmployeeType) => {
+    setSelectedEmployee(employee);
+    setIsModalDeleteOpen(true);
+
+
+  }
 
   const handleToggleEdit = (employee: EmployeeType) => {
     setSelectedEmployee(employee);
@@ -86,8 +95,6 @@ const EmployeesManager = () => {
     setEditEmail(employee.email);
     setEditNumber(employee.phone_number);
     setIsModalOpen(true);
-    setIsEditing(true);
-    console.log(employee.employee_name, employee.email, employee.phone_number);
   };
 
   const onchangeName = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,8 +111,30 @@ const EmployeesManager = () => {
 
   const handleCancel = () => {
     setIsModalOpen(false);
-    setIsEditing(false);
+    setIsModalDeleteOpen(false)
   };
+  const [form] = Form.useForm();
+
+  const UpdateButton = ({ form }: { form: FormInstance }) => {
+    const [updatetable, setUpdatetable] = useState(false);
+    const values = Form.useWatch([], form);
+    React.useEffect(() => {
+      form.validateFields({ validateOnly: true }).then(
+        () => {
+          setUpdatetable(true);
+        },
+        () => {
+          setUpdatetable(false);
+        },
+      );
+    }, [values]);
+    return (
+      <Button type="primary" htmlType="submit" onClick={handleUpdate} disabled={!updatetable}>
+        Submit
+      </Button>
+    );
+  };
+
 
   return (
     <>
@@ -119,27 +148,29 @@ const EmployeesManager = () => {
                 hoverable
                 className="grid-item"
                 key={employee.employee_id}
-                style={{ width: 350, margin: "auto", marginTop: 15 }}
+                style={{
+                  width: 300, margin: "auto", borderRadius: 10, marginTop: 15, border: '2px solid #dadada',
+                }}
                 actions={[
-                  <EditOutlined onClick={() => handleToggleEdit(employee)} />,
-                  <DeleteOutlined
-                  style={{color: "#ff4d4f"}}
-                     onClick={() => handleDelete(employee.employee_id)
-                    
-                    } 
-                    // onClick={()=>{
-                    //   <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(employee.employee_id)}>
-                    //   <a>Delete</a>
-                    // </Popconfirm>
-
-                    // } }
-                  />,
+                  
+                    <Space  style={{width: '100%', justifyContent:'center',columnGap:'50%'}}>
+                    <Popover content="Edit Employee">
+                      <EditOutlined onClick={() => handleToggleEdit(employee)} />
+                    </Popover>
+                    <Popover content='Delete Employee'>
+                      <DeleteOutlined style={{ color: "#ff4d4f" }} onClick={() => handleToggleDelete(employee)} />
+                    </Popover>
+                  </Space>,
+                 
                 ]}
               >
                 <Meta
-                  avatar={<Avatar src="https://xsgames.co/randomusers/avatar.php?g=pixel&key=2" />}
                   title={employee.employee_name}
-                  description={employee.email}
+                  description={
+                    <>
+                      {employee.email} <br /> {employee.phone_number}
+                    </>
+                  }
                 />
               </Card>
             );
@@ -150,56 +181,82 @@ const EmployeesManager = () => {
       <Modal
         title="Edit Employee Information"
         open={isModalOpen}
-        onOk={handleUpdate}
+        destroyOnClose={true}
+        footer={[]}
         onCancel={handleCancel}
         style={{ width: "500px", textAlign: "center" }}
       >
         <div style={{ padding: 20 }}>
           <Form
-            name="wrap"
+            name="validateOnly"
             labelCol={{ flex: "150px" }}
             labelAlign="left"
-            labelWrap
+            form={form}
             wrapperCol={{ flex: 1 }}
             colon={false}
             style={{ maxWidth: 600 }}
+            initialValues={selectedEmployee}
           >
-            <Form.Item label="Name" name="name"
-              rules={[{ required: true, message: 'Please input your name!' }]}>
+            <Form.Item label="Name" name="employee_name"
+              rules={[{ required: true, message: 'Please input your name!' },
+              { whitespace: true }
+              ]} hasFeedback
+            >
               <Input
-                defaultValue={employee_name}
-                value={employee_name}
                 onChange={onchangeName} required
               />
             </Form.Item>
-
             <Form.Item label="Email" name="email" rules={[
               { required: true, message: 'Please input your email!' },
               {
                 pattern: /^[\w-]+(\.[\w-]+)*@hotmail\.com$|^[\w-]+(\.[\w-]+)*@outlook\.com$|^[\w-]+(\.[\w-]+)*@gmail\.com$/,
                 message: 'Please enter a valid email address!'
-              }
-            ]} >
+              },
+              { whitespace: true }
+            ]} hasFeedback
+            >
+
               <Input
-                defaultValue={email}
-                value={email} type="email"
                 onChange={onchangeEmail} required />
             </Form.Item>
 
-            <Form.Item label="Phone Number" name="number" rules={[{ required: true }]}>
-              <Input
+            <Form.Item label="Phone Number" name="phone_number"
+              rules={[
+                { required: true },
+                {
+                  pattern: new RegExp("^[0-9]*$"),
+                  message: 'Please enter a valid phone number!'
+                },
 
-                defaultValue={employee_number}
-                value={employee_number}
+                { whitespace: true }
+
+              ]} hasFeedback
+            >
+              <Input
                 pattern="[0-9]{1,10}"
-                type="tel"
                 maxLength={10}
                 onChange={onchangephone}
                 required
               />
             </Form.Item>
+            <Form.Item>
+              <Space>
+                <UpdateButton form={form} />
+              </Space>
+            </Form.Item>
           </Form>
         </div>
+      </Modal>
+
+      <Modal
+        title="Delete this employee"
+        open={isModalDeleteOpen}
+        onOk={handleDelete}
+        onCancel={handleCancel}
+        okText="Confirm"
+        cancelText="Cancel"
+      >
+        <p>Confirm delete this employee ??</p>
       </Modal>
     </>
   );
